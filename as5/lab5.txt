@@ -1,0 +1,157 @@
+Building coreutils
+	wget http://web.cs.ucla.edu/classes/winter16/cs35L/assign/coreutils-with-bug.tar.gz
+	tar -xvf coreutils-with-bug.tar.gz 
+	cd coreutils-with-bug
+	emacs INSTALL
+	      //provided instructions for building coreutils
+	./configure
+	make
+//SNIPPET OF OUTPUT//
+In file included from utimecmp.c:41:
+utimens.h:2: error: conflicting types for 'futimens'
+/usr/include/sys/stat.h:374: note: previous declaration of 'futimens' was here
+make[3]: *** [utimecmp.o] Error 1
+make[3]: Leaving directory `/w/home.08/cs/ugrad/tanzeela/cs35l/as5/coreutils-with-bug/lib'
+make[2]: *** [all] Error 2
+make[2]: Leaving directory `/w/home.08/cs/ugrad/tanzeela/cs35l/as5/coreutils-with-bug/lib'
+make[1]: *** [all-recursive] Error 1
+make[1]: Leaving directory `/w/home.08/cs/ugrad/tanzeela/cs35l/as5/coreutils-with-bug'
+make: *** [all] Error 2
+//OUTPUT ENDS//
+
+	 //Make fails because the function, futimens, is listed in two different files with different parameters. 
+	 This is illegal and confuses the make, causing it to fail. The function headings are listed below.
+
+	 ----lib/utimens.h-------
+	 int futimens (int, char const *, struct timespec const [2]);
+	 ------------------------
+	 ----lib/utimens.c-------
+	 int
+	 futimens (int fd ATTRIBUTE_UNUSED,
+	           char const *file, struct timespec const timespec[2])
+	 ------------------------
+
+Rebuilding coreutils with Given Patch
+   wget -O coreutils.diff http://web.cs.ucla.edu/classes/winter16/cs35L/assign/coreutils.diff
+   patch -p0 < coreutils.diff   
+//OUTPUT//
+patching file lib/utimens.c
+patching file lib/utimens.h
+patching file src/copy.c
+patching file src/tee.c
+patching file src/touch.c
+//OUTPUT ENDS//
+
+Reproducing the Problem
+	export COPTS='-g -O0'
+	mkdir $tmp
+	cd $tmp
+	$ touch -d '1918-11-11 11:00 GMT' wwi-armistice
+	$ touch now
+	$ sleep 1
+	$ touch now1
+	$ TZ=UTC0 ~/cs35l/as5/coreutils-with-bug/src/ls -lt --full-time wwi-armistice now now1
+	-rw-r--r-- 1 tanzeela csugrad 0 1918-11-11 11:00:00.000000000 +0000 wwi-armistice
+	-rw-r--r-- 1 tanzeela csugrad 0 2016-10-31 23:03:45.893554898 +0000 now1
+	-rw-r--r-- 1 tanzeela csugrad 0 2016-10-31 23:03:40.325406960 +0000 now
+	//Bug exists with patched version of coreutils-with-bug.
+
+
+Debugging
+		//I created a new copy of coreutils-with-bug, using the same steps as before.
+   	cd ..
+     	cp -r as5/coreutils-with-bug/ as5/coreutils-with-bugfixed/
+   	cd as5/coreutils-with-bugfixed
+		//I entered the tmp directory and ran gdb from there.
+	gdb ~/cs35l/as5/coreutils-with-bugfixed/src/ls
+	info functions
+	b qsort
+	     //I used the hint to enter the sort_files function.
+	b sort_files
+	r -lt --full-time wwi-armistice now now1
+	  //I began stepping through sort_files. Looking for function that had something do with the keyword "time", I came across the following line: 
+	func = sort_reverse ? rev_cmp_mtime : compare_mtime;
+	     //I decided to create a breakpoint at compare_mtime.
+	b compare_mtime
+		//I continued stepping through sort_files and qsort until I entered this function. In this function, I noticed the following code:
+	
+	--output-------------
+timespec_cmp (b=..., a=...) at ../lib/timespec.h:48
+46	timespec_cmp (struct timespec a, struct timespec b)
+47	{
+48	  int diff = a.tv_sec - b.tv_sec;
+49	    return diff ? diff : a.tv_nsec - b.tv_nsec;
+50	    }
+	--output ends-------------
+	
+		//I continued stepping through until I was on line 48. I then created a watchpoint for diff.
+	watch diff
+	
+	--output-------------
+	Watchpoint 3: diff
+
+	Old value = 1477955025
+	New value = 5
+	--output ends----------------
+	
+		//This output looks fine, but I then do another iteration. Since I leave the loop, my watchpoint gets deleted and I have to create the watchpoint again when I step to the line.
+	watch diff
+	
+	--output------------
+	Watchpoint 4: diff
+
+	Old value = 3
+	New value = 1477955025
+	--output ends-----------
+		
+	s
+	
+	--output----------
+	Watchpoint 4: diff
+
+	Old value = 1477955025
+	New value = -1203186271
+	--output ends-----------
+	
+		//This is the interesting information. It appears that bit-wise subtraction may have resulted in integer overflow. 
+		//This may be the reason the date moved to the "future". I then type "c" to continue several times to get the original incorrect output (wwi-armstice listed at the top).
+
+		//After exiting gdb, I decide to enter the file that has the weird output, lib/timespec.h. I make changes to the file such that the ints can hold larger numbers, long long ints.
+	cd lib
+		//I make a copy of timespec.h to remember my changes
+	cp timespec.h timespecold.h
+	emacs timespec.h
+		//make changes
+	./configure
+	make
+		// I test this change by running the ls command in the tmp directory again.
+	TZ=UTC0 ~/cs35l/as5/coreutils-with-bugfixed/src/ls -lt --full-time wwi-armistice now now1
+	-rw-r--r-- 1 tanzeela csugrad 0 2016-10-31 10:15:55.446866360 +0000 now1
+	-rw-r--r-- 1 tanzeela csugrad 0 2016-10-31 10:15:50.581736879 +0000 now
+	-rw-r--r-- 1 tanzeela csugrad 0 1918-11-11 11:00:00.000000000 +0000 wwi-armistice
+		// This is the correct output, so I begin creating my patch.
+
+Creating and Testing My Patch
+	cd ~/cs35l/as5/coreutils-with-bugfixed/
+	diff -u lib/timespecold.h lib/timespec.h >lab5.diff
+	     //I then enter lab5.diff and manually add my changelog entry to the top of the file. Now, the patch is ready.
+	     //I recreate the originally (given) patched version of coreutils-with-bug, getting ready to apply my patch.
+	cd ..
+	cp -r coreutils-with-bug coreutils-with-bugpatched
+	cd coreutils-with-bugpatched
+        patch -p1 < ../coreutils-with-bugfixed/lab5.diff
+        ./configure
+        make
+		//Now, I enter the tmp directory to test if my patch works.
+	cd $tmp
+	TZ=UTC0 ~/cs35l/as5/coreutils-with-bugpatched/src/ls -lt --full-time wwi-armistice now now1
+	-rw-r--r-- 1 tanzeela csugrad 0 2016-10-31 10:15:55.446866360 +0000 now1
+	-rw-r--r-- 1 tanzeela csugrad 0 2016-10-31 10:15:50.581736879 +0000 now
+	-rw-r--r-- 1 tanzeela csugrad 0 1918-11-11 11:00:00.000000000 +0000 wwi-armistice
+	    //The patch appears to work because wwi-armistice is at the bottom of the list.
+		
+Clarifications:
+coreutils-with-bug: originally given file + given patch
+coreutils-with-bugfixed: edited, patch for ls bug  created from this directory
+coreutils-with-bugpatched: patched with diff generated from coreutils-with-bugfixed
+

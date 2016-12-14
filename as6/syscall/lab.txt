@@ -1,0 +1,109 @@
+1. tr2b.c: I used the same implementation of getchar() from sfrob.c in Assignment 5 to read the input. 
+   This was probably very inefficient because sfrob.c involved considering spacing and adding to an array. 
+   The implementation works but could be shortened so that code is simply read by getchar() and replaced.
+   gcc -g tr2b.c -o tr2b
+   ./tr2b 'abcd' 'wxyz' < yez.txt
+
+2. tr2u.c: The code from sfrob.c was not particuarly helpful for this program. I read each character using a while loop. 
+   I was initially having problems incrememnting, but a while loop works. 
+   While reading each character, I would check if the character should be replaced. If so, I would write that character.
+   gcc -g tr2u.c -o tr2u
+   ./tr2u 'abcd' 'wxyz' < yez.txt
+
+3. To create a file with 5,000,000 bytes, I created a script, grow, that would append to another file, big.txt, 5,000,000 bytes. I used this file as the input for the strace testing.
+(a)
+strace -c ./tr2b  'abcd' 'wxyz' < big.txt > tr2bres.txt
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 24.13    0.000104           2        55           write
+ 17.17    0.000074           0      1433           mremap
+ 12.99    0.000056           0       364           brk
+ 12.06    0.000052           1        57           read
+ 12.06    0.000052           5        10           mmap
+  6.03    0.000026           7         4           mprotect
+  3.25    0.000014           4         4           fstat
+  3.02    0.000013           7         2           open
+  2.55    0.000011          11         1           execve
+  2.32    0.000010          10         1           munmap
+  1.86    0.000008           4         2           close
+  1.62    0.000007           7         1         1 access
+  0.93    0.000004           4         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00    0.000431                  1935         1 total
+
+strace -c ./tr2u  'abcd' 'wxyz' < big.txt > tr2ures.txt
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 55.37    4.137330           1   3601492           write
+ 44.63    3.334824           1   3601494           read
+  0.00    0.000039           6         7           mmap
+  0.00    0.000026           7         4           mprotect
+  0.00    0.000014           7         2           open
+  0.00    0.000010          10         1           munmap
+  0.00    0.000008           4         2           fstat
+  0.00    0.000007           4         2           close
+  0.00    0.000006           6         1         1 access
+  0.00    0.000005           5         1           execve
+  0.00    0.000004           4         1           brk
+  0.00    0.000004           4         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00    7.472277               7203008         1 total
+
+(b)
+strace -c ./tr2b  'abcd' 'wxyz' < big.txt
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 99.26    0.045893           1     50050           write
+  0.39    0.000182           3        57           read
+  0.14    0.000063           7         9           mmap
+  0.06    0.000026           7         4           mprotect
+  0.04    0.000018           5         4           fstat
+  0.03    0.000015           8         2           open
+  0.02    0.000009           9         1           munmap
+  0.02    0.000007           4         2           close
+  0.02    0.000007           7         1         1 access
+  0.01    0.000005           5         1           brk
+  0.01    0.000005           5         1           execve
+  0.01    0.000004           4         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00    0.046234                 50133         1 total
+
+strace -c ./tr2u  'abcd' 'wxyz' < big.txt
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 55.46    4.223505           1   3601492           write
+ 44.54    3.391532           1   3601494           read
+  0.00    0.000038           5         7           mmap
+  0.00    0.000025           6         4           mprotect
+  0.00    0.000013           7         2           open
+  0.00    0.000010          10         1           munmap
+  0.00    0.000008           4         2           fstat
+  0.00    0.000007           7         1         1 access
+  0.00    0.000006           3         2           close
+  0.00    0.000005           5         1           execve
+  0.00    0.000004           4         1           brk
+  0.00    0.000004           4         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00    7.615157               7203008         1 total
+
+   //strace -o strace_1 ./tr2b 'abh' 'xyn' < big.txt
+   //strace -o strace_2 ./tr2u 'abh' 'xyn' < big.txt
+
+tr2u.c had a consistent amount of system calls over a and b, totally 7203008. 
+This number was larger than that of tr2b.c. tr2b.c made an inconsistent number of calls. tr2u.c made 1000 times more system calls than tr2b.c, indicating its inefficiency. 
+
+4. time ./tr2b 'abcd' 'wxyz' < big.txt 
+real	0m0.594s
+user	0m0.260s
+sys	0m0.086s
+
+   time ./tr2u 'abcd' 'wxyz' < big.txt
+real	0m4.408s
+user	0m0.287s
+sys	0m4.090s
+  
+For real, tr2b.c's is 7.42x faster than tr2u.c's. 
+This is expected considering the fact that tr2u.c takes more time making 1000x more system calls.
+For user, the times for both programs wer about the same.
+For sys, tr2b.c's is 47.56x faster than tr2u.c's. 
+As discussed beore, real is interacting with the system for each call in tr2u.c's, while tr2b.c's main writing is done with the user in real, less interaction with the system.

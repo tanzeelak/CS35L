@@ -1,0 +1,17 @@
+1. If the other teams had been observing all the bytes across the network, the network's data is still secure. 
+Assuming ssh was used to connect, messages between the computers are encrypted across the network, resulting in data that people would not be able to decrypt. 
+While the messages will first be encrypted using a public key, which the other teams can see, the messages can only be decrypted 
+by the private key which is not available over the network. 
+Moreover, while the session key shared between the user and the server is based on the original authentication key, the other team will not be able to decrypt the session. 
+   (1) If the other team tapped the keyboard so they could see all of our team's keystrokes, the data may no longer be secure. 
+A passphrase was used to access the private key, so they would be able to see these bytes. would still be secure because the other team would be unable to see the private key.
+   (2) If the other team had physical control of the USB, they have significantly more potential to hack our network.
+ The other team could take passcodes from the USB, view the private key, which provides direct access to decrypting our data. 
+
+2. gpg --verify command doesn't really verify that I personally created the tar file. 
+The command only verifies the trueness of the document which the given public key. 
+If the private key was stolen, or viewed by someone else. 
+An attacker can use the public key to sign in as the actual owner. 
+For example, if A is sending a file to B, C can sign a document as A, and send his message to B. 
+The integrity of the document will still hold, but the verification of the owner failed.
+To fix this problem, we could have a trusted third party to keeptrack o f the owner of the public key for each receival. 

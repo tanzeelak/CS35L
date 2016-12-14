@@ -1,0 +1,122 @@
+- Setting Up Dictionary and Learning tr command
+  export LC_ALL='C'
+  emacs words
+      sort /usr/share/dict/words > ~/cs35l/as2/words
+      wget -o assign.html 
+      http://web.cs.ucla.edu/classes/fall16/cs35L/assign/assign2.html
+      (command) < assign.html
+	  tr -c 'A-Za-z' '[\n*]' 
+	  - replaces non-alpha letters with a new line
+	  tr -cs 'A-Za-z' '[\n*]' 
+	  - replaces non-alpha letters with a new line but sqeueezes all 
+	    consecutive new lines after first
+     	  tr -cs 'A-Za-z' '[\n*]' | sort
+      	  - replaces non-alpha letters with a new line but sqeueezes all 
+	    consecutive newe lines after firstbut alpha
+      	  tr -cs 'A-Za-z' '[\n*]' | sort -u
+      	  - replaces non-alpha letters with a new line but sqeueezes all 
+	    consecutive newe lines after firstbut alpha but no repeated words
+      	  tr -cs 'A-Za-z' '[\n*]' | sort -u | comm - words
+      	  - Compared the sorted file to words. Showed 3 columns: words unique 
+	    to assign2.html, words unitqe to words.txt, words shared by both 
+	    files
+      	  tr -cs 'A-Za-z' '[\n*]' | sort -u | comm -23 -words
+      	  - Same as before but only prints the first column
+
+- Creating Hawaiian Dictionary 
+       - Finds all <td>'s and puts them into a file
+       	 grep "<td>" testwords > savethem
+       	 mv savethem testwords
+       - To remove all backslashes. [^>] removes everything that isn't the 
+       	 closing. *> to the closing.
+       	 sed "s/<[^>]*>//g" testwords > savethem
+       	 mv savethem testwords
+       - To remove blank lines. first convert tabs into blank spaces
+         sed 's/^ \t]*$//g' testwords > savethem
+         mv savethem testwords
+	 grep '[^[:blank:]]' < testwords > savethem
+	 mv savethem testwords
+       - Upper to lower
+         tr [:upper:] [:lower:] < testwords > savethem
+       	  mv savethem testwords
+       - replace gravemarks with apostrophes
+         sed -i "s/\`/'/g" testwords
+       - treat spaced/comma words as separate words
+	 sed -i "s/\ /\n/g" testwords
+       - grep '[^[:blank:]]' < testwords > savethem
+	 mv savethem testwords
+	 sed -i "/,/d" testwords
+       - remove words with non-hwaiian letters
+       	 sed -i "/[^pk'mnwlhaeiou]/d" testwords
+       - sort uniquely
+	 sort -u testwords > savethem
+         mv savethem testwords
+
+- Running the Script
+  chmod 755 buildwords
+
+#find all tds
+grep "<td>" |\
+
+#removes everything within brackets
+sed "s/<[^>]*>//g" |\
+
+#convert tabs into blank spaces
+sed 's/^ \t]*$//g' |\
+
+#upper to lower
+tr [:upper:] [:lower:] |\
+
+#replace gravemarks with apostrophes
+sed "s/\`/'/g" |\
+
+#delete every other line
+sed '/^\s$/d' |\
+sed -n '1~2!p' |\
+
+#treat words separated by spaces/commas as seperate wrods
+sed "s/\ /\n/g" |\
+sed '/^$/d' |\
+sed '/,/d' |\
+
+#remove words with non-hawaiian letters
+sed '/[^p^k^m^n^w^l^h^a^e^i^o^u^'\'']/d' |\
+
+#sort uniquely
+sort -u
+
+- Testing Hawaii Script
+	cat hwords | ./buildwords > savewords
+
+	wget -o assign.html 
+	http://web.cs.ucla.edu/classes/winter16/cs35L/assign/assign2.html
+
+	- The following command checks spelling of Hawaiian words  with
+	 assignment page. It outputs 413, indicating the number of words that 
+	 did not match the Hawaiian dictionary:
+	cat assign.html | tr -cs 'A-Za-z' '[\n*]' | tr [:upper:] [:lower:] | 
+	sort -u | comm -23 - hwords | wc
+
+	- The following command checks spelling of English words with 
+	assignment page. It outputs 39, indicating the number of words on the 
+	page that did not match the English dictionary:
+	cat assign.html | tr -cs 'A-Za-z' '[\n*]' | tr [:upper:] [:lower:] | 
+	sort -u | comm -23 - words | wc
+
+	- The following command stores the ouputs (words that did not match) of 
+	the Hawaiian and English dictionary
+	cat assign.html | tr -cs 'A-Za-z' '[\n*]' | tr [:upper:] [:lower:] |
+	 sort -u | comm -23 - words > ecomp
+	cat assign.html | tr -cs 'A-Za-z' '[\n*]' | tr [:upper:] [:lower:] | 
+	sort -u | comm -23 - hdiction > hcomp
+	
+	- The following command outputs the words that were mispelled in 
+	English, but in Hawaiian. There were 2 words. Examples of words output 
+	were "lau" and "wiki".
+	comm -23 ecomp hcomp
+	
+	- The following command ouptuts words that were mispelled in Hawaiian, 
+	but not in English. There were 370 words. Examples of words output 
+	were "these" and "they".
+	comm -23 hcomp ecomp
+

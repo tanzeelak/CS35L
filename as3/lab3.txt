@@ -1,0 +1,98 @@
+1.	#Grabbing Coreutils_7.6 using wget and tar unzipping
+
+	wget ftp://ftp.gnu.org/gnu/coreutils/coreutils-7.6.tar.gz
+	tar -xvf coreutils-7.6.tar.gz//unzips file
+
+2.	#Compiling and installing Coreutils
+
+	cd coreutils-7.6
+	emacs INSTALL 
+	      #INSTALL file provides instructions on how to compile and install
+	       copy of Coreutils int my own temporary directory. Thse are
+	       ./configure, make, make install
+ 	mkdir mybin
+	      #Directory to be used for later.
+./configure --prefix=/u/cs/ugrad/tanzeela/cs35l/as3/core4/coreutils-7.6/mybin
+	    #prefix is added to install into outside directory.
+	make
+	make install
+	cd mybin
+
+3.	#Reproducing bug on machine
+
+	export LC_ALL='en_US.UTF-8' 
+	       #Bug is apparent in this locale.
+	./bin/ls -l 
+		 #snippet of output is below
+drwxr-xr-x 2 tanzeela csugrad 8192 2016-10-11 11:31 bin
+drwxr-xr-x 3 tanzeela csugrad 4096 2016-10-11 11:31 lib
+drwxr-xr-x 5 tanzeela csugrad 4096 2016-10-11 11:31 share
+	     	 #snippet of output finished
+
+4. 	  #Fixing Brady's Patch. Take care to patch while in the specified 
+	   directories. 
+
+	  cd ~/cs35l/as3/coreutils-7.6/
+	  nano patch_file //copy brady's patch
+	       #When creating patch_file with emacs, hunks failed to be patched.
+	        This is likely doto different formatting of the emacs text 
+		editor. For this reason, I used nano.
+	  patch -p1 <patch_file
+	  	#OUTPUT of patch is shown below
+		patching file NEWS
+		Hunk #1 succeeded at 397 with fuzz 2 (offset 365 lines).
+		patching file src/ls.c
+		Hunk #1 succeeded at 2013 (offset -1 lines).
+		Hunk #2 succeeded at 2028 (offset -1 lines).
+		#OUTPUT of patch is finished
+
+5. 	#Use make while still in the coreutils-7.6 directory, the top level of
+	 the source tree.
+
+	make 
+	     #make creates a new patched version fo the ./ls -l command in the 
+	     src file of its library. We must test this version of the command 
+	     within that directory
+	cd src
+	   #accessing the direcotry that holds the patched ./ls -l. We could 
+	   also use the root path of the patched command with an input 
+	   directory, so it is not neecssary to access src.
+	./ls -l
+	     #Snippet of output is below
+-rwxr-xr-x 1 tanzeela csugrad  97907 Oct 10 15:11 base64
+-rw-r--r-- 1 tanzeela csugrad   8422 Sep  1  2009 base64.c
+-rw-r--r-- 1 tanzeela csugrad  26200 Oct 10 15:11 base64.o
+	     #Snippet of output is finished
+
+6. 	#To make sure the changes fix the bug. We shall test the commands once
+	 more, outside of their respective directories. We shall create a new 
+	 directory within our local directory that holds an old and new file.
+
+	cd to as3
+	mkdir testdir
+	cd testdir
+	touch new_file
+	touch -t 201504100959.30 test_file 
+	      #As specified by the TA, this command aritifically changes the 
+	      recorded time of this file, even if both the files were created 
+	      at the same time. 
+
+	#Testing Bugged version of ls -l
+	./../core4/coreutils-7.6/mybin/bin/ls -l
+	#Output is shown below					    
+-rw-r--r-- 1 tanzeela csugrad 0 2016-10-11 13:25 new_file
+-rw-r--r-- 1 tanzeela csugrad 0 2015-04-10 09:59 test_file
+	#Output is finished. Bug is present as expected.	   
+
+	#Testing Patched version of ls -l 
+	./../core4/coreutils-7.6/src/ls -l
+	#Output is shown below
+-rw-r--r-- 1 tanzeela csugrad 0 Oct 11 13:25 new_file
+-rw-r--r-- 1 tanzeela csugrad 0 Apr 10  2015 test_file
+	#Output is finished. File is patched as expected.
+
+	#There is an apparent difference in timestamp for files output by the 
+	patched command. For files older than year, test_file, the timestamp
+	is no shown, only the year. For files created within the year, the 
+	year is not shown, only the timestamp. For the bugged version both the 
+	date and timestamp are shown no matter the age of the file.

@@ -1,0 +1,140 @@
+1. //Get copy of Diffutils repository
+   mkdir gitroot
+   cd gitroot
+   git clone git://git.savannah.gnu.org/diffutils.git 
+
+2. //Get log of changes
+   cd diffutils
+   git log > git-log.txt 
+
+3. //Get tags
+   git tag > git-tags.txt
+
+4. //Search for commit to create patch
+   emacs git-logs.txt
+   C-s maint: quote
+   C-p 
+   //copy git ID: 62ca21c8c1a5aa3488589dcb191a4ef04ae9ed4f
+   git show 62ca21c8c1a5aa3488589dcb191a4ef04ae9ed4f > quote-patch.txt
+
+5. //Checkout 3.0 of repository
+   git checkout v3.0
+   //OUTPUT//
+   Note: checking out 'v3.0'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by performing another checkout.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -b with the checkout command again. Example:
+
+  git checkout -b new_branch_name
+
+HEAD is now at 022cd5c... version 3.0
+     //END//
+
+6. //Apply the patch from the commit
+   patch -p1 < quote-patch.txt
+   	 //When questioned during the patching process, I pressed RETURN
+
+7. //See git status
+   git status
+   //OUTPUT SNIPPET
+   modified:   NEWS
+        modified:   README
+        modified:   TODO
+        modified:   doc/diagmeet.note
+        modified:   ms/config.bat
+        modified:   ms/config.site
+        modified:   po/en.po
+        modified:   src/analyze.c
+        modified:   src/cmp.c
+        modified:   src/context.c
+        modified:   src/diff.c
+        modified:   src/diff.h
+        modified:   src/diff3.c
+        modified:   src/dir.c
+        modified:   src/ifdef.c
+        modified:   src/io.c
+        modified:   src/sdiff.c
+        modified:   src/side.c
+        modified:   src/system.h
+        modified:   src/util.c
+        modified:   tests/help-version
+   //OUTPUT END
+
+8. //Understand diff commands
+   vc-diff (C-x v=)
+   vc-revert (C-x v u)
+   diff-apply-hunk (C-u C-c C-a)
+   diff-goto-source (C-c C-c)
+
+9. //Only want changes to .c files!
+   //For non c files, reverted changes because changes are only meant for the c file
+   C-x v u yes
+   //For c files, entered diff mode using C-x v =. Checked hunk-by-hunk for whether each change would remain. C-c C-c was used to check the source of each hunk. If the hunk was part of a comment, reverted hunk using the command: C-u C-c C-a  RETURN. Otherwise, left the difference. 
+
+10. //Manually fix rejected patches
+    cd src
+    //There were two rejected files, diff.c.rej and diff3.c.rej. emacs'd into rejected files and found that patches for these hunks were not performed. Checked rejected and non-rejected files side-by-side, mmanually typing in the chagne for the original version of file.
+
+11. //Remove untracked files
+    git status
+    	//output diff's, orig's, and other unchanged files
+    git clean -f
+
+12. //Creating new patch
+    git status
+//OUTPUT////
+# HEAD detached at v3.0
+# Changes not staged for commit:
+#   (use "git add <file>..." to update what will be committed)
+#   (use "git checkout -- <file>..." to discard changes in working directory)
+#
+#	modified:   src/cmp.c
+#	modified:   src/diff.c
+#	modified:   src/diff3.c
+#	modified:   src/dir.c
+#	modified:   src/sdiff.c
+#	modified:   src/util.c
+#
+no changes added to commit (use "git add" and/or "git commit -a")
+//OUTPUT END////
+	 //Half a dozen files have been output.
+
+    git diff >quote-3.0-patch.txt
+    	//quote-3.0-patch.txt is 320 lines long, as expected.
+
+13. //Build modified Diffutils
+    emacs README-hacking
+    export PATH=/usr/local/cs/bin:$PATH
+    	   //Added this command because my server settings did not make help2man easily accessible. 
+    ./bootstrap
+    ./configure
+    make	
+    make check
+    	 //make check had errors
+
+    //Verifying the modified Diffutils worksn
+     ./src/diff . -
+         //OUTPUT//
+	     ./src/diff: cannot compare '-' to a directory
+         //OUTPUT END//
+     ./src/diff --help > diffhelp
+     		//Output basic help description for diff command
+
+14.  //Testing
+     cd ../ 
+     mv diffutils diffutils-3.0-patch
+     	//move our modifed diffuitils into the designated name
+     git clone git://git.savannah.gnu.org/diffutils.git diffutils-3.0
+     	 //clone another repository for the designated name
+     ./diffutils-3.0-patch/src/diff -pru diffutils-3.0 diffutils-3.0-patch >quote-3.0-test.txt
+     
+15. //Compare contents
+    ./diffutils-3.0-patch/src/diff quote-3.0-test.txt diffutils-3.0-patch/quote-3.0-patch.txt >lastdiff.diff
+      //The files are not identical, but the differences are innocuous.
+
+
+

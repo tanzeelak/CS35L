@@ -1,0 +1,9 @@
+top-left screen: Visual display of changes made to file. Each points represents a change, which has a description of the change to its right. In this case, the descritption says "Merge branch 'master' into xwidget"
+
+top-middle screen: Lists name and email of person who changed the file, in order of the descrition on the top-left screen. In this case, the name is "Joakim Verona <joaki@verona.se>"
+
+top-right screen: Lists date of change, in order of the description of the previously described screens. The date format is year-month-date time. In this case, the date is "2015-01-25 12:19:27"
+
+middle screen: lists the id of the selected chagne. Provides options to search next//previous commits.
+
+bottom-left screen: Describes the selected merge in the format: Author, Committer, Parents, Child, Branches, Follows, Precedes, Description. In this case, the description is "Merge branch 'master' into xwidget"

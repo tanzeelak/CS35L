@@ -1,0 +1,129 @@
+1. //Create hw
+   emacs hw4.txt
+
+2. //Checkout quote branch
+   cd diffutils-3.0
+   git checkout v3.0
+   git checkout -b quote
+
+3. //Install change into branch
+   patch -p1 <../diffutils-3.0-patch/quote-3.0-patch.txt
+//OUTPUT//
+patching file src/cmp.c
+patching file src/diff.c
+patching file src/diff3.c
+patching file src/dir.c
+patching file src/sdiff.c
+patching file src/util.c
+//OUTPUT END//
+
+    git status
+//OUTPUT//
+On branch quote
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git checkout -- <file>..." to discard changes in working directory)
+
+  modified:   src/cmp.c
+  modified:   src/diff.c
+  modified:   src/diff3.c
+  modified:   src/dir.c
+  modified:   src/sdiff.c
+  modified:   src/util.c
+
+no changes added to commit (use "git add" and/or "git commit -a")
+//OUTPUT END//
+
+4. //Learn changelog commands
+   C-x 4 a in each file to add a description of change.
+
+5. //Using C-x 4 a for each of the listed files
+   * util.c: Changed backticks of non-comments to apostrophes
+
+   * sdiff.c: Changed backticks of non-comments to apostrophes
+
+   * dir.c: Changed backticks of non-comments to apostrophes
+
+   * diff3.c: Changed backticks of non-comments to apostrophes
+
+   * diff.c: Changed backticks of non-comments to apostrophes
+
+   * cmp.c: Changed backticks of non-comments to apostrophes
+
+6. //Committing changes to new branch
+   git add .
+   git commit -F src/ChangeLog
+   git log
+//OUTPUT//
+commit 3295c24484f24f6bdf0ac147cca66411ace41ea3
+Author: Tanzeela Naimah Khan <tanzeela@lnxsrv05.seas.ucla.edu>
+Date:   Thu Oct 20 03:40:14 2016 -0700
+
+    2016-10-20  Tanzeela Naimah Khan  <tanzeela@lnxsrv05.seas.ucla.edu>
+    
+        * util.c: Changed backticks of non-comments to apostrophes
+    
+        * sdiff.c: Changed backticks of non-comments to apostrophes
+    
+        * dir.c: Changed backticks of non-comments to apostrophes
+    
+        * diff3.c: Changed backticks of non-comments to apostrophes
+    
+        * diff.c: Changed backticks of non-comments to apostrophes
+    
+        * cmp.c: Changed backticks of non-comments to apostrophes
+//OUTPUT END//
+
+7. //Creating format-patch
+   git format-patch -1 --stdout > formatted-patch.txt
+
+8. //Testing partner's patch
+   cd ..
+   git clone git://git.savannah.gnu.org/diffutils.git differic
+   touch differic/ericpatch.txt
+   //Open up a new terminal and scp partner's patch.
+   //My partner was Taoran Liu
+   cd Downloads
+   scp "formatted-patch (2).txt" tanzeela@lnxsrv.seas.ucla.edu:~/cs35l/as4/gitroot5/differic/ericpatch.txt
+   
+   //Get 
+   git checkout v3.0 -b partner
+   git am <ericpatch.txt
+   ./bootstrap
+   ./configure
+   make
+   make check
+   	//Partner's patch ran smoothly
+
+9. //Verifying the Changelog entry works
+   make distdir
+   cd diffutils-3.0.1-f9b6
+   emacs ChangeLog
+///OUTPUT//
+2016-10-21  Taoran Liu  <etliu@ucla.edu>
+
+        2016-10-21 Taoran Liu <etliu@ucla.edu>
+                            maint: changes all grave symbols into normal single quotes.
+                            * src/cmp.c, src/diff.c, src/diff3.c, src/dir.c, src/sdiff.c, src/util.c:
+                            * src/cmp.c (try_help, specify_ignore_initial, usage, main):
+                            * src/diff.c (main, try_help, option_help_msgid, specify_value)
+                            (compare_files):
+                            * src/diff3.c (main, try_help, option_help_msgid, usage)
+                            (read_diff):
+                            * src/dir.c (compare_names):
+                            * src/sdiff.c (try_help, usage, check_child_status, main):
+                            * src/util.c (finish_output):
+//OUTPUT END///
+
+10. //Running gitk
+    git clone git://git.savannah.gnu.org/emacs.git
+    //Open up a new terminal and enter the following ssh
+    ssh -X tanzeela@lnxsrv02.seas.ucla.edu
+    export PATH=/usr/local/cs/bin:$PATH
+    cd cs35l/as4/gitroot/emacs
+    gitk
+    //Scroll to find correct merge
+        Date: 2015-01-25 12:19:27
+    	SHA1 ID: d522fd8ca73e668bfafd0419bc5f71f2751cca24
+
+

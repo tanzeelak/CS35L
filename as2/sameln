@@ -1,0 +1,80 @@
+#!/bin/bash
+
+cd $1
+dir=$1
+filearr=`ls -a $dir`
+declare -a arr
+
+let count=0
+for FILE in $filearr
+do
+    if [ ! -L "$dir/$FILE" ]
+    then
+	if [ -f "$dir/$FILE" ] && [[ $FILE = \.* ]]
+	then
+	    if [ -r "$dir/$FILE" ] 
+	    then
+#	    echo "dot loop"
+#	    echo "$dir/$FILE"
+		arr[$count]="$dir/$FILE"
+#	    echo "${arr[count]}"
+		let count=count+1
+	    else
+		echo "File could not be read"
+	    fi
+	fi
+    fi
+done
+
+
+for FILE in $filearr
+do
+    if [ ! -L "$dir/$FILE" ]
+    then
+	if [ -f "$dir/$FILE" ] && [[ $FILE != \.* ]]
+	then
+	    if [ -r "$dir/$FILE" ] 
+	    then
+#	    echo "not dot loop"
+#	    echo "$dir/$FILE"
+		arr[$count]="$dir/$FILE"
+#	    echo "${arr[count]}"	    
+		let count=count+1
+	    else 
+		echo "File could not be read"
+	    fi
+	fi
+    fi
+done
+
+echo "time to reveal array"
+
+for i in ${arr[@]}
+do
+    echo $i
+done
+
+
+for i in ${arr[@]}
+do 
+    for j in ${arr[@]}
+    do
+
+	inode=`stat -c '%i' "$i"`
+	jnode=`stat -c '%i' "$j"`
+	echo "lez reveal nodes"
+	echo $i 
+	echo $inode
+	echo $j
+	echo $jnode
+	cmp $i $j	
+	if [ $? -eq 0 ] && [ $inode != $jnode ]
+	then   	 
+	    echo "they are the same"
+	    rm $j
+	    ln $i $j
+	    break
+	fi
+	echo "  "
+    done
+done

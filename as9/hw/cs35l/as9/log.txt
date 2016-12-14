@@ -1,0 +1,58 @@
+My partner was Nathan Yang. 
+
+Check openssh files
+      $dpkg --get-selections | grep openssh
+      $sudo apt-get update
+      $sudo apt-get install openssh-server
+      $sudo apt-get install openssh-client
+
+Generate public and Private Keys
+	$ssh-keygen
+	//did not create passphrase
+
+ACTING AS SERVER
+Create directory named clinet & add username client
+       $sudo useradd -d /home/client -m client
+       //sets user to "client"
+
+Create password for client
+       $sudo passwd client
+       //sets passowrd to "client"       
+
+Create ssh directory to store RSA keys
+       cd /home/client
+       sudo mkdir .ssh
+       sudo chown -R client .ssh
+       sudo chmod 700 .ssh
+
+Server IP for client to lgogin
+       $ifconfig
+       10.97.85.140
+
+
+ACTING AS CLIENT
+Copy public key to server
+      $ssh-copy-id -i client@10.97.85.137
+      Are you sure you want to continue connecting? y
+      password: client
+
+Add private key to authentication agent
+    $ssh-add
+     //add to /home/ubutnu/.ssh/id_rsa
+
+SSH to server
+    $ssh client@10.97.85.137
+    //This ip address is from Nathan's server. He created a  user named client.
+    $touch hello.txt
+    //My partner checked his server and found my hello.txt file 
+    $pwd
+    /home/client
+    $exit
+    $ssh -X client@10.97.85.137
+    $firefox
+    ^C
+    $gedit
+    ^C
+    $xterm
+    ^C
+    //The past three commands opened their programs successfully.

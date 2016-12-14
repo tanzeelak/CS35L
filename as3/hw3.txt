@@ -1,0 +1,52 @@
+Q1. Brady's patch removed the lines "case_long_iso_time_style:" because the
+    line had been duplicated.
+
+Q2. There may be other underlying problems. Since numbers are globally
+    recognized, users who don't speak English will not have too much trouble
+    with that.
+
+Q3. I pass the following command through the terminal:
+    python randline.py.1 -n 3 /dev/null
+    	   #Output is below
+Traceback (most recent call last):
+  File "randline.py", line 70, in <module>
+    main()
+  File "randline.py", line 64, in main
+    sys.stdout.write(generator.chooseline())
+  File "randline.py", line 34, in chooseline
+    return random.choice(self.lines)
+  File "/usr/lib64/python2.6/random.py", line 261, in choice
+    return seq[int(self.random() * len(seq))]  # raises IndexError if seq is 
+    empty
+IndexError: list index out of range
+	    #Output is finished
+   This error occurs because an empty file is treated as no file, and since 
+   the script needs an non-empty agrument, the script crashes.
+
+Q4. I pass the following command through the terminal:
+    python3 randline.py.1 -n 3 /dev/null
+    	    #Output is below
+For time in terminal: export PATH=$PATH:/usr/local/cs/bin
+/usr/local/cs/bin/python3 randline.py /dev/null 
+  File "randline.py", line 65
+    except IOError as (errno, strerror):
+                      ^
+SyntaxError: invalid syntax
+	    #Output is finished 
+    This error occcurs because python3 and python are different in syntax
+    and style. The command, "except IOERrror as (errno, strerror):" command
+    is likely only usable for python2, rather than for python3. To fix this
+    error, the proper python3 syntax would be the following:
+    except IOError as err:
+
+/*------ Commands for comm.py ------*/
+
+Tested unsorted files using the following commands
+python3 comm.py -u unsortedfile unsortedfile2
+python comm.py -u unsortedfile unsortedfile2
+
+Tested sorted files using the following commands
+python3 comm.py sortedfile sortedfile2
+python comm.py sortedfile sortedfile2
+
+/*------ End -----*/

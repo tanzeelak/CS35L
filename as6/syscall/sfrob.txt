@@ -1,0 +1,86 @@
+Time Differences:
+
+File Size: 1.5K
+time ./sfrobs < small.txt
+real 0m0.007s
+user 0m0.003s
+sys  0m0.005s
+time ./sfrobu < small.txt
+real 0m0.003s
+user 0m0.001s
+sys  0m0.002s
+Comparisons: 1626
+time ./sfrob < small.txt
+real 0m0.002s
+user 0m0.001s
+sys  0m0.000s
+Fastest real: sfrob
+	user: sfrob
+	sys: sfrob
+
+File Size: 389K
+time ./sfrobs < med.txt
+real 0m0.034s
+user 0m0.025s
+sys  0m0.012s
+time ./sfrobu < med.txt
+real 0m0.523s
+user 0m0.074s
+sys  0m0.443s
+Comparisons: 711599    
+time ./sfrob < med.txt
+real 0m0.078s
+user 0m0.066s
+sys  0m0.008s
+Fastest real: sfrobs
+	user: sfrobs
+	sys: sfrob
+
+File Size: 3.5M
+time ./sfrobs < big.txt
+real 0m1.179s
+user 0m0.250s
+sys  0m0.076s
+time ./sfrobu < big.txt
+real 0m3.580s
+user 0m0.552s
+sys  0m2.992s
+Comparisons: 7538872
+time ./sfrob < big.txt
+real 0m1.244s
+user 0m0.755s
+sys  0m0.090s
+Fastest real: sfrobs
+	user: sfrobs
+	sys: sfrob
+
+File Size: 64M
+time ./sfrobs < /usr/local/cs/jdk1.8.0_102/jre/lib/rt.jar
+real 0m25.462s
+user 0m0.425s
+sys  0m1.463s
+time ./sfrobu < /usr/local/cs/jdk1.8.0_102/jre/lib/rt.jar
+real 0m57.422s
+user 0m2.859s
+sys  0m53.860s
+Comparisons: 7538872
+time ./sfrob < /usr/local/cs/jdk1.8.0_102/jre/lib/rt.jar
+real 0m25.244s
+user 0m0.755s
+sys  0m1.090s
+Fastest real: sfrob
+	user: sfrobs
+	sys: sfrob
+
+
+For the small file size, sfrob had all of the fastest times. Following that, either sfrob and sfrobs had the fastest times for real and sys. For user, sfrobs consistently ahd the fastest.
+
+sfrob's dominance in system is expected because sfrobu makes system calls for each output to the terminal. 
+Making so many system calls is an expensive and time consuming task. In comparison to sfrobu, sfrob spends less time in the kernal. sfrobs *shell script)  asserts the most dominace for real and user. 
+While piping occurs for the script to tke place, shell script involves a great deal of optimization when being executed, since the source code is directly used for the inputs. This result is expected.
+
+The three versions of "sfrob" were implemented with differing algorithms, so perhaps other algorithms would have resulted in different speed times. 
+
+The number of comparison for sfrobu appears to increasing for the greater the file, as expected. For the orignal text file:
+"*~BO *{_CIA *hXE]D *LER #@_GZY #E\OX #^BO #FKPS #NEM",
+the number of comparisons consistently remained at 17. Considering there are 9 elements to be sorted, this is a reasonable number. 

@@ -1,0 +1,42 @@
+1) I checked the sort version and verified that it was up to date
+sort --version
+     sort (GNU coreutils) 8.22
+2) I generated the file with 10000000 doubles using the following command:
+od -An -t8 -N 80000000 < /dev/urandom | tr -s ' ' '\n' > rand.txt
+The options mean:
+-An
+-t8
+-N 80000000: 1 double = 8 bytes
+   	     10000000 = 80000000 bytes
+   This command resulted in a blank line at the top of the rand.txt which I manually deleted. 
+3) I ran the sort without parallel at first:
+$time -p sort -g rands.txt > /dev/null
+real 40.29
+user 218.32
+sys 0.65
+
+4) The following test cases involve using the --parallel option. 
+$time -p sort -g --parallel=1 rands.txt > /dev/null
+real 180.50
+user 180.19
+sys 0.29
+
+$time -p sort -g --parallel=2 rands.txt > /dev/null
+real 98.21
+user 187.96
+sys 0.32
+
+$time -p sort -g --parallel=4 rands.txt > /dev/null
+real 55.42
+user 189.93
+sys 0.47
+
+$time -p sort -g --parallel=8 rands.txt > /dev/null
+real 41.87
+user 230.28
+sys 0.63
+
+An increased number of parallelized threads appears to incerase th espaed of the speed of sorting exponentially. 
+Since the run with 8 threads had time valus that matched with the very first run (with no parallel options), we can assume that the program is run optimally at 8 threads. 
+Perhaps at more threads, if that is possible, errors occur, or speed does not increase. As far as I know, multithreading may be capped at 8 threads for similar reasons.  
+While there are limits to threading, parallizing has an overall positive effect in efficiency of a program.

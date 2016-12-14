@@ -1,0 +1,29 @@
+#find all tds
+grep "<td>" |\
+
+#removes everything within brackets
+sed "s/<[^>]*>//g" |\
+
+#convert tabs into blank spaces
+sed 's/^ \t]*$//g' |\
+
+#upper to lower
+tr [:upper:] [:lower:] |\
+
+#replace gravemarks with apostrophes
+sed "s/\`/'/g" |\
+
+#delete every other line
+sed '/^\s$/d' |\
+sed -n '1~2!p' |\
+
+#treat words separated by spaces/commas as seperate wrods
+sed "s/\ /\n/g" |\
+sed '/^$/d' |\
+sed '/,/d' |\
+
+#remove words with non-hawaiian letters
+sed '/[^p^k^m^n^w^l^h^a^e^i^o^u^'\'']/d' |\
+
+#sort uniquely
+sort -u

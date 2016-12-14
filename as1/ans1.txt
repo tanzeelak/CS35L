@@ -1,0 +1,70 @@
+1. man man
+   man apropos
+   ANS: man -k ""
+2. which cp
+   which wc
+   ANS: cp: /bin/cp
+   	wc: /usr/bin/wc
+3. man find
+   find /usr/bin -name '?'
+       man X
+       man w
+       man [
+   ANS: X - a portable, network-transparent window system
+      	w - Show who is logged on and what they are doing.
+   	[ - No manual entry for [
+4. ls -s /usr/bin/emacs
+   readlink /usr/bin/emacs
+   ANS: /etc/alternatives/emacs
+5. man chmod
+   ANS: You can set or clear the bits with symbolic modes like u+s and g-s, and 
+   you can set (but  not  clear)  the bits with a numeric mode.
+6. man find
+   /mtime
+   ANS: find -mtime -3
+7. find -mtime -3 -type d
+   ANS: .
+8. cd /bin
+   find $directory -type l -exec echo symlinks \; | sort | uniq -c
+   ANS: 20
+9. man ls
+   ls -lt
+   ANS: libgamin-1.so.0.1.10
+10. man locale
+    ANS: LC_* environment variables
+11. emacs
+    C-h t
+    C-h a sort
+    ANS: Buffer-menu-sort
+    	 Buffer-menu-sort-by-column
+    	 ibuffer-invert-sorting    
+    	 ibuffer-toggle-sorting-mode  
+    	 rmail-sort-by-author         
+    	 rmail-sort-by-correspondent  
+    	 rmail-sort-by-date           
+    	 rmail-sort-by-labels         
+    	 rmail-sort-by-lines          
+    	 rmail-sort-by-recipient      
+    	 rmail-sort-by-subject        
+    	 sort-columns                 
+    	 sort-fields                  
+    	 sort-lines                   
+    	 sort-numeric-fields          
+    	 sort-pages                   
+    	 sort-paragraphs              
+    	 sort-regexp-fields           
+12. ANS: C-M-a: Move to beginning of current or preceding defun
+       	 C-M-h: Put region around whole current or following defun 
+13. emacs
+    C-h t
+    ANS: If Emacs stops responding to your commands, you can stop it safely by
+14. emacs
+    C-h t
+    C-s yank
+    ANS: yank: It reinserts the last killed text, at the current cursor 
+    position.
+15. cd /usr/bin
+    ls -l
+    emacs tester
+    C-x d /usr/bin
+    ANS: dired shows some more subdirectories≈
